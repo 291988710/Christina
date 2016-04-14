@@ -14,6 +14,11 @@
 #include <windows.h>
 
 //////////////////////////////////////////////////////////////////////////
+// 变量声明
+//////////////////////////////////////////////////////////////////////////
+HWND hWndBtn;	//自定义按钮
+
+//////////////////////////////////////////////////////////////////////////
 //窗口主程序
 //////////////////////////////////////////////////////////////////////////
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -26,6 +31,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_CREATE:
 		{
+			//创建自定义按钮
+			hWndBtn = CreateWindow("button", "", WS_CHILD | BS_OWNERDRAW, 50, 50, 33, 33, hWnd, (HMENU)1, NULL, NULL);
+			//因为没有WS_VISIBLE属性，所以需要手动显示出来
+			ShowWindow(hWndBtn, TRUE);
 			break;
 		}
 	case WM_PAINT:
@@ -39,6 +48,27 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_DESTROY:
 		{
 			PostQuitMessage(0);
+			break;
+		}
+	case WM_DRAWITEM:
+		{
+			//重绘按钮
+			static HICON hIconBtnStart, hIconBtnPause;
+			LPDRAWITEMSTRUCT pDis = (LPDRAWITEMSTRUCT)lParam;
+			SetBkMode(pDis->hDC, TRANSPARENT);
+			hIconBtnStart = LoadIcon(NULL, MAKEINTRESOURCE(IDI_QUESTION));
+			hIconBtnPause = LoadIcon(NULL, MAKEINTRESOURCE(IDI_ERROR));
+
+			if (pDis->itemState & ODS_SELECTED)
+			{
+				//Get focus
+				DrawIcon(pDis->hDC, pDis->rcItem.left, pDis->rcItem.top, hIconBtnStart);
+			}
+			else
+			{
+				//Lose focus
+				DrawIcon(pDis->hDC, pDis->rcItem.left, pDis->rcItem.top, hIconBtnPause);
+			}
 			break;
 		}
 	}
